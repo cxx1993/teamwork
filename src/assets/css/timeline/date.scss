@@ -1,0 +1,74 @@
+#timeline-date{
+  // overflow: hidden;
+  background:white;
+  height:60px;
+  box-shadow: 0 2px 7px 0 rgba(0,0,0,.12);
+  position: relative;
+  z-index: 178;
+  .picker{
+    // position:absolute;
+    // width: 60px;
+    // height: 60px;
+    // left: -60px;
+    // top:0;
+    // z-index: 1000;
+  }
+  li{
+    list-style: none;
+    cursor: default;
+  }
+  ul.month-split{
+    color: #201a32;
+    // overflow: hidden;
+    li{
+      float: left;
+      display: inline-block;
+    }
+    >li{
+      position: relative;
+    }
+  }
+  ul.day-split{
+    width: 100%;
+    float:left;
+    li{
+      transition:all .2s linear; 
+      height: 60px;
+      padding-top: 20px;
+      line-height:40px;
+      text-align: center;
+      span{
+        font-size: 12px;
+        opacity: 0.4;
+        margin-left:3px;
+        display:inline-block;
+        transform: scale(0.8);
+      }
+      b{
+        font-weight: normal;
+        font-size: 16px;
+      }
+      &:hover{
+        background:#eaf7ff;
+      }
+    }
+    li.week{
+      background:#f5f6f7;
+      color: rgba(32, 26, 50, 0.5);
+      // opacity: .7;
+      &:hover{
+        background:#eaf7ff;
+      }
+    }
+    li.sunday{
+      border-right:1px solid #e6e6e6
+    }
+  }
+  span.month{
+    position: absolute;
+    color:#3399ff;
+    left: 5px;
+    top: 3px;
+    font-size: 14px;
+  }
+}

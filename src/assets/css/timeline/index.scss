@@ -1,0 +1,24 @@
+#timeline{
+  position: relative;
+  box-sizing: border-box;
+  z-index: 5;
+  min-height: 100vh;
+  background: white;
+}
+
+#timeline-content{
+  padding-left: 60px;
+  overflow:scroll;
+  height:100vh;
+  .bgGround{
+    height:calc(100% - 60px);
+    position: relative;
+    left:0;
+  }
+}
+
+
+
+@import './slider.scss';
+@import './cell.scss';
+@import './date.scss';
