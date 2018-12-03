@@ -4,7 +4,7 @@
       {{item.content}}
     </td>
   </tr> -->
-  <div class='strip'>
+  <div @dblclick.stop.prevent='addTask(userId, $event)' class='strip' :style="{zIndex:isHover ? 5 : 2}">
     <!-- <div class='task'   :style="{transform: 'translate('+item.offset+'px, 0px)',width:item.width+'px'}"> -->
       <VueDraggableResizable
         class='task'
@@ -12,11 +12,13 @@
         :hoverTip='true'
         :w='item.width' :h='50' :z='1000'
         :x='item.offset' :y='0'
-        :resizing="onResize"
-        :dragging="onDrag"
+        :resizing="false"
+        :dragging="false"
         :spacer="$global.liWidth"
+        @hover="isHover = $event"
+        @dbclick='editTask(item.id)'
         >
-        {{item.content}}
+        {{item.title}}
         <template slot="explain">
           <!-- hover显示内容 -->
           {{item.start_time}} - {{item.end_time}}
@@ -43,9 +45,14 @@ export default {
         return []
       },
     },
+    userId: {
+      type: [Number, String],
+    },
   },
   data() {
-    return {}
+    return {
+      isHover: false, // 是否是当前行hover tip，提升z-index提升层级
+    }
   },
   components: {
     // Drag,
@@ -78,9 +85,20 @@ export default {
       // this.x = x
       // this.y = y
     },
+    addTask(userId, event) {
+      // 获取当前的位置，知道是在哪一天进行点击的
+      const { clientX, clientY } = event
+      this.$emit('add', userId)
+    },
+    editTask(taskId) {
+      this.$emit('edit', taskId)
+    },
   },
   computed: {
 
+  },
+  updated() {
+    // console.log(this.list)
   },
   created() {
     // eslint-disable-next-line

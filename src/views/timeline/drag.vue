@@ -35,105 +35,105 @@ export default {
   name: 'VueDraggableResizable',
   props: {
     active: {
-      type: Boolean, default: false
+      type: Boolean, default: false,
     },
     draggable: {
-      type: Boolean, default: true
+      type: Boolean, default: true,
     },
     resizable: {
-      type: Boolean, default: true
+      type: Boolean, default: true,
     },
     w: {
       type: Number,
       default: 200,
-      validator: function (val) {
+      validator(val) {
         return val > 0
-      }
+      },
     },
     h: {
       type: Number,
       default: 200,
-      validator: function (val) {
+      validator(val) {
         return val > 0
-      }
+      },
     },
     minw: {
       type: Number,
       default: 50,
-      validator: function (val) {
+      validator(val) {
         return val >= 0
-      }
+      },
     },
     minh: {
       type: Number,
       default: 50,
-      validator: function (val) {
+      validator(val) {
         return val >= 0
-      }
+      },
     },
     x: {
       type: Number,
       default: 0,
-      validator: function (val) {
+      validator(val) {
         return typeof val === 'number'
-      }
+      },
     },
     y: {
       type: Number,
       default: 0,
-      validator: function (val) {
+      validator(val) {
         return typeof val === 'number'
-      }
+      },
     },
     z: {
-      type: [ String, Number ],
+      type: [String, Number],
       default: 'auto',
-      validator: function (val) {
-        let valid = (typeof val === 'string') ? val === 'auto' : val >= 0
+      validator(val) {
+        const valid = (typeof val === 'string') ? val === 'auto' : val >= 0
         return valid
-      }
+      },
     },
     handles: {
       type: Array,
-      default: function () {
+      default() {
         return ['tl', 'tm', 'tr', 'mr', 'br', 'bm', 'bl', 'ml']
       },
-      validator: function (val) {
-        var s = new Set(['tl', 'tm', 'tr', 'mr', 'br', 'bm', 'bl', 'ml'])
+      validator(val) {
+        const s = new Set(['tl', 'tm', 'tr', 'mr', 'br', 'bm', 'bl', 'ml'])
 
         return new Set(val.filter(h => s.has(h))).size === val.length
-      }
+      },
     },
     dragHandle: {
       type: String,
-      default: null
+      default: null,
     },
     dragCancel: {
       type: String,
-      default: null
+      default: null,
     },
     axis: {
       type: String,
       default: 'both',
-      validator: function (val) {
+      validator(val) {
         return ['x', 'y', 'both'].indexOf(val) !== -1
-      }
+      },
     },
     grid: {
       type: Array,
-      default: function () {
+      default() {
         return [1, 1]
-      }
+      },
     },
     parent: {
-      type: Boolean, default: false
+      type: Boolean, default: false,
     },
     maximize: {
-      type: Boolean, default: false
-    }
+      type: Boolean, default: false,
+    },
   },
 
-  created: function () {
+  created() {
     this.parentX = 0
     this.parentW = 9999
     this.parentY = 0
@@ -154,7 +154,8 @@ export default {
     this.elmW = 0
     this.elmH = 0
   },
-  mounted: function () {
+  mounted() {
+    return 
     document.documentElement.addEventListener('mousemove', this.handleMove, true)
     document.documentElement.addEventListener('mousedown', this.deselect, true)
     document.documentElement.addEventListener('mouseup', this.handleUp, true)
@@ -172,8 +173,9 @@ export default {
 
     this.reviewDimensions()
   },
-  beforeDestroy: function () {
-    document.documentElement.removeEventListener('mousemove', this.handleMove, true)
+  beforeDestroy() {
+    return 
+    // document.documentElement.removeEventListener('mousemove', this.handleMove, true)
     document.documentElement.removeEventListener('mousedown', this.deselect, true)
     document.documentElement.removeEventListener('mouseup', this.handleUp, true)
 
@@ -184,7 +186,7 @@ export default {
     document.documentElement.removeEventListener('touchstart', this.deselect, true)
   },
 
-  data: function () {
+  data() {
     return {
       top: this.y,
       left: this.x,
@@ -194,12 +196,12 @@ export default {
       dragging: false,
       enabled: this.active,
       handle: null,
-      zIndex: this.z
+      zIndex: this.z,
     }
   },
 
   methods: {
-    reviewDimensions: function () {
+    reviewDimensions() {
       if (this.minw > this.w) this.width = this.minw
 
       if (this.minh > this.h) this.height = this.minh
@@ -225,13 +227,13 @@ export default {
 
       this.$emit('resizing', this.left, this.top, this.width, this.height)
     },
-    elmDown: function (e) {
+    elmDown(e) {
       const target = e.target || e.srcElement
 
       if (this.$el.contains(target)) {
         if (
-          (this.dragHandle && !matchesSelectorToParentElements(target, this.dragHandle, this.$el)) ||
-          (this.dragCancel && matchesSelectorToParentElements(target, this.dragCancel, this.$el))) {
+          (this.dragHandle && !matchesSelectorToParentElements(target, this.dragHandle, this.$el))
+          || (this.dragCancel && matchesSelectorToParentElements(target, this.dragCancel, this.$el))) {
           return
         }
 
@@ -249,7 +251,7 @@ export default {
         }
       }
     },
-    deselect: function (e) {
+    deselect(e) {
       if (e.type.indexOf('touch') !== -1) {
         this.mouseX = e.changedTouches[0].clientX
         this.mouseY = e.changedTouches[0].clientY
@@ -273,7 +275,7 @@ export default {
         }
       }
     },
-    handleDown: function (handle, e) {
+    handleDown(handle, e) {
       this.handle = handle
 
       if (e.cancelable) {
@@ -283,7 +285,7 @@ export default {
 
       this.resizing = true
     },
-    fillParent: function (e) {
+    fillParent(e) {
       if (!this.parent || !this.resizable || !this.maximize) return
 
       let done = false
@@ -303,10 +305,10 @@ export default {
           ) done = true
         } else if (this.axis === 'both') {
           if (
-            this.width === this.parentW &&
-            this.height === this.parentH &&
-            this.top === this.parentY &&
-            this.left === this.parentX
+            this.width === this.parentW
+            && this.height === this.parentH
+            && this.top === this.parentY
+            && this.left === this.parentX
           ) done = true
         }
 
@@ -339,7 +341,7 @@ export default {
 
       window.requestAnimationFrame(animate)
     },
-    handleMove: function (e) {
+    handleMove(e) {
       const isTouchMove = e.type.indexOf('touchmove') !== -1
       this.mouseX = isTouchMove
         ? e.touches[0].clientX
@@ -356,8 +358,8 @@ export default {
       this.lastMouseX = this.mouseX
       this.lastMouseY = this.mouseY
 
-      let dX = diffX
-      let dY = diffY
+      const dX = diffX
+      const dY = diffY
 
       if (this.resizing) {
         if (this.handle.indexOf('t') >= 0) {
@@ -415,7 +417,7 @@ export default {
         this.$emit('dragging', this.left, this.top)
       }
     },
-    handleUp: function (e) {
+    handleUp(e) {
       if (e.type.indexOf('touch') !== -1) {
         this.lastMouseX = e.changedTouches[0].clientX
         this.lastMouseY = e.changedTouches[0].clientY
@@ -432,31 +434,31 @@ export default {
 
       this.elmX = this.left
       this.elmY = this.top
-    }
+    },
   },
 
   computed: {
-    style: function () {
+    style() {
       return {
-        top: this.top + 'px',
-        left: this.left + 'px',
-        width: this.width + 'px',
-        height: this.height + 'px',
-        zIndex: this.zIndex
+        top: `${this.top}px`,
+        left: `${this.left}px`,
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        zIndex: this.zIndex,
       }
-    }
+    },
   },
 
   watch: {
-    active: function (val) {
+    active(val) {
       this.enabled = val
     },
-    z: function (val) {
+    z(val) {
       if (val >= 0 || val === 'auto') {
         this.zIndex = val
       }
-    }
-  }
+    },
+  },
 }
 </script>
 

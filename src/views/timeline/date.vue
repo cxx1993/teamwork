@@ -19,6 +19,7 @@
 
 
 <script>
+import { mapMutations, mapGetters } from 'vuex'
 import {
   setDate, eachDay, lastDayOfMonth, getDate, getMonth, isWeekend, isSunday, format,
 } from 'date-fns'
@@ -34,6 +35,9 @@ export default {
   },
   props: ['caculateW'],
   methods: {
+    ...mapMutations([
+      'updateDate',
+    ]),
     dateRange(sdate, edate) {
       const { liWidth } = this
       const start = setDate(sdate, 1)
@@ -43,7 +47,7 @@ export default {
         end,
       )
       this.dataRange = this.mutiDate(result)
-      this.$store.commit('updateDate', result)
+      this.updateDate(result)
       this.caculateW(result.length * liWidth, (this.firstWeekendPosition - 5) * liWidth)
     },
     // 丰富数据
@@ -82,6 +86,11 @@ export default {
       this.firstWeekendPosition = _firstWeekendPosition
       return rv
     },
+  },
+  computed: {
+    ...mapGetters({
+      store_getDate: 'getDate',
+    }),
   },
   filters: {},
   created() {

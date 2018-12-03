@@ -5,15 +5,11 @@
       active: enabled,
       dragging: dragging,
       resizing: resizing
-    }" @mousedown="elmDown" @touchstart="elmDown" @dblclick="fillParent">
+    }" @mousedown="elmDown" @touchstart="elmDown" @dblclick.stop.prevent="fillParent">
     <div v-for="handle in handles" v-if="resizable" class="handle" :key="handle" :class="'handle-' + handle" :style="{ display: enabled ? 'block' : 'none'}" @mousedown="handleDown(handle, $event)" @touchstart="handleDown(handle, $event)">
     </div>
     <slot></slot>
-    <div class='explain' :style="{
-        display: showExplain ? 'block':'none',
-        left:explain_left+'px',
-        top:explain_top+'px'
-      }">
+    <div class='explain' :style="explainStyle">
       <slot name='explain'></slot>
     </div>
   </div>
@@ -131,6 +127,14 @@ export default {
     hoverTip: {
       type: Boolean, default: false,
     },
+    changeIsHover: {
+      type: Function,
+      default: (res) => {
+        return {
+          res: '',
+        }
+      },
+    },
   },
 
   created() {
@@ -156,16 +160,16 @@ export default {
   },
   mounted() {
     this.$el.addEventListener('mousemove', this.handleMove, true)
-    document.documentElement.addEventListener('mousedown', this.deselect, true)
-    this.$el.addEventListener('mouseup', this.handleUp, true)
+    // document.documentElement.addEventListener('mousedown', this.deselect, true)
+    // this.$el.addEventListener('mouseup', this.handleUp, true)
     this.$el.addEventListener('mouseenter', this.handleEnter, true) //--
     this.$el.addEventListener('mouseleave', this.handleLeave, true) //--
 
     // touch events bindings
     this.$el.addEventListener('touchmove', this.handleMove, true)
-    document.documentElement.addEventListener('touchend touchcancel', this.deselect, true)
-    this.$el.addEventListener('touchstart', this.handleUp, true)
-    document.documentElement.addEventListener('touchstart', this.deselect, true)
+    // document.documentElement.addEventListener('touchend touchcancel', this.deselect, true)
+    // this.$el.addEventListener('touchstart', this.handleUp, true)
+    // document.documentElement.addEventListener('touchstart', this.deselect, true)
 
     this.elmX = parseInt(this.$el.style.left)
     this.elmY = parseInt(this.$el.style.top)
@@ -177,16 +181,16 @@ export default {
   },
   beforeDestroy() {
     this.$el.removeEventListener('mousemove', this.handleMove, true)
-    document.documentElement.removeEventListener('mousedown', this.deselect, true)
-    this.$el.removeEventListener('mouseup', this.handleUp, true)
+    // document.documentElement.removeEventListener('mousedown', this.deselect, true)
+    // this.$el.removeEventListener('mouseup', this.handleUp, true)
     this.$el.removeEventListener('mouseenter', this.handleEnter, true) // --
     this.$el.removeEventListener('mouseleave', this.handleLeave, true) // --
 
     // touch events bindings removed
     this.$el.removeEventListener('touchmove', this.handleMove, true)
-    document.documentElement.removeEventListener('touchend touchcancel', this.deselect, true)
-    document.documentElement.removeEventListener('touchstart', this.handleUp, true)
-    this.$el.removeEventListener('touchstart', this.deselect, true)
+    // document.documentElement.removeEventListener('touchend touchcancel', this.deselect, true)
+    // document.documentElement.removeEventListener('touchstart', this.handleUp, true)
+    // this.$el.removeEventListener('touchstart', this.deselect, true)
   },
 
   data() {
@@ -294,6 +298,7 @@ export default {
       this.resizing = true
     },
     fillParent(e) {
+      this.$emit('dbclick')
       if (!this.parent || !this.resizable || !this.maximize) return
 
       let done = false
@@ -369,6 +374,7 @@ export default {
       const dX = diffX
       const dY = diffY
       if (this.resizing) {
+        this.showExplain = false // resize时不显示
         if (this.handle.indexOf('t') >= 0) {
           if (this.elmH - dY < this.minh) this.mouseOffY = (dY - (diffY = this.elmH - this.minh))
           else if (this.parent && this.elmY + dY < this.parentY) this.mouseOffY = (dY - (diffY = this.parentY - this.elmY))
@@ -410,6 +416,8 @@ export default {
 
         this.$emit('resizing', this.left, this.top, this.width, this.height)
       } else if (this.dragging) {
+        this.showExplain = false // 拖拽时不显示
+
         if (this.parent) {
           if (this.elmX + dX < this.parentX) this.mouseOffX = (dX - (diffX = this.parentX - this.elmX))
           else if (this.elmX + this.elmW + dX > this.parentW) this.mouseOffX = (dX - (diffX = this.parentW - this.elmX - this.elmW))
@@ -485,29 +493,51 @@ export default {
 
     },
     handleExplainMove(e) {
-      const { pageX, pageY } = e
+      const explain = this.$el.querySelector('.explain')
+      const { clientX, clientY } = e
       const { offsetLeft, offsetTop } = this.$el
-      this.explain_top = pageX - offsetTop + 10
-      this.explain_left = pageY - offsetLeft + 10
+      const { offsetWidth, offsetHeight } = explain
+      const _pageLeft = clientX - offsetLeft + 5
+      const _pageTop = clientY - offsetTop + 5
+      // if (_pageLeft >= clientX - offsetWidth) {
+      //   _pageLeft = clientX - offsetWidth - 5
+      // }
+
+      // if (_pageTop >= clientY - offsetHeight) {
+      //   _pageTop = clientY - offsetHeight - 5
+      // }
+
+      // this.explain_top = _pageTop
+      // this.explain_left = _pageLeft
     },
     // 鼠标移入dom
     handleEnter(e) {
       // this.showExplain = true
+      this.$emit('hover', true)
     },
     // 鼠标移除dom
     handleLeave() {
-      this.showExplain = false
+      // this.showExplain = false
+      this.$emit('hover', false)
     },
   },
 
   computed: {
     style() {
       return {
-        top: `${this.top}px`,
-        left: `${this.left}px`,
+        transform: `translate(${this.left}px,${this.top}px)`,
+        // top: `${this.top}px`,
+        // left: `${this.left}px`,
         width: `${this.width}px`,
         height: `${this.height}px`,
         zIndex: this.zIndex,
+      }
+    },
+    explainStyle() {
+      const { showExplain, explain_left, explain_top } = this
+      return {
+        display: showExplain ? 'block' : 'none',
+        transform: `translate(${explain_left}px,${explain_top}px)`,
       }
     },
   },
@@ -524,88 +554,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.vdr {
-  touch-action: none;
-  position: absolute;
-  box-sizing: border-box;
-}
-.handle {
-  box-sizing: border-box;
-  display: none;
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  font-size: 1px;
-  background: #eee;
-  border: 1px solid #333;
-}
-.handle-tl {
-  top: -10px;
-  left: -10px;
-  cursor: nw-resize;
-}
-.handle-tm {
-  top: -10px;
-  left: 50%;
-  margin-left: -5px;
-  cursor: n-resize;
-}
-.handle-tr {
-  top: -10px;
-  right: -10px;
-  cursor: ne-resize;
-}
-.handle-ml {
-  top: 50%;
-  margin-top: -5px;
-  left: -10px;
-  cursor: w-resize;
-}
-.handle-mr {
-  top: 50%;
-  margin-top: -5px;
-  right: -10px;
-  cursor: e-resize;
-}
-.handle-bl {
-  bottom: -10px;
-  left: -10px;
-  cursor: sw-resize;
-}
-.handle-bm {
-  bottom: -10px;
-  left: 50%;
-  margin-left: -5px;
-  cursor: s-resize;
-}
-.handle-br {
-  bottom: -10px;
-  right: -10px;
-  cursor: se-resize;
-}
-@media only screen and (max-width: 768px) {
-  /* For mobile phones: */
-  [class*='handle-']:before {
-    content: '';
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    top: -10px;
-    position: absolute;
-  }
-}
-.explain {
-  padding: 16px;
-  position: absolute;
-  /* border-radius: 4px; */
-  color: #515a6e;
-  line-height: 1.5;
-  min-height: 120px;
-  width: 300px;
-  height: auto;
-  background: white;
-  border: 1px solid rgba(33, 150, 243, 0.75);
-}
-</style>
