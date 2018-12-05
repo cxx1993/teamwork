@@ -68,15 +68,19 @@
         @click="handleReset"
         style="margin-left: 8px"
       >Reset</Button>
+      <Button
+        v-show='type'
+        @click="handleDelete"
+        style="margin-left: 8px"
+      >delete</Button>
     </FormItem>
   </Form>
 </template>
 <script>
 import axios from 'axios'
+import { mapMutations } from 'vuex'
 
 export default {
-  props: {
-  },
   data() {
     return {
       type: 0, // 0:新增 1:修改
@@ -103,6 +107,9 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      store_curdTask: 'curdTask',
+    }),
     handleSubmit() {
       this.$refs.formValidate.validate(valid => {
         if (valid) {
@@ -113,9 +120,10 @@ export default {
     // 重置表单
     handleReset() {
       this.$refs.formValidate.resetFields()
+      this.dateRange = ['', '']
     },
     addInit(userId) {
-      this.userId = userId
+      this.formValidate.userId = userId
       this.type = 0
     },
     updateInit(taskId) {
@@ -137,6 +145,7 @@ export default {
       axios
         .put(`http://127.0.0.1:3000/task/${taskId}`, { ...formValidate })
         .then(res => {
+          this.store_curdTask({ data: res.data, type: 'update' })
           this.$Message.success('修改成功！')
           this.$emit('close', false)
           this.handleReset()
@@ -152,18 +161,34 @@ export default {
       } = this
       formValidate.start_time = dateRange[0]
       formValidate.end_time = dateRange[1]
-      formValidate.userId = userId
-      formValidate.groupId = groupId
       axios
-        .post('http://127.0.0.1:3000/task', { ...formValidate })
+        .post('http://127.0.0.1:3000/task', formValidate)
         .then(res => {
           this.$Message.success(res.msg || '新增成功！')
           this.$emit('close', false)
           this.handleReset()
+          this.store_curdTask({ data: res.data, type: 'add' })
         })
         .catch(err => {
           this.$Message.error(err.message || '新增出错！')
         })
+    },
+    // 删除task
+    handleDelete() {
+      const {
+        formValidate: {
+          id,
+          userId,
+        },
+      } = this
+      axios.delete(`http://127.0.0.1:3000/task/${id}`).then(res => {
+        this.$Message.error(res.message || '删除成功！')
+        this.$emit('close', false)
+        this.handleReset()
+        this.store_curdTask({ data: { id, userId }, type: 'remove' })
+      }).catch(err => {
+        this.$Message.error(err.message || '删除出错！')
+      })
     },
   },
 }

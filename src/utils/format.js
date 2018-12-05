@@ -32,7 +32,7 @@ export const ftWeekDay = function (value) {
 }
 
 // 返回相距天数
-export const apartOfDays = function (sdate, edate) { 
+export const apartOfDays = function (sdate, edate) {
   const days = new Date(edate).getTime() - new Date(sdate).getTime()
-  return parseInt( days / (1000 * 60 * 60 * 24) )
+  return parseInt(days / (1000 * 60 * 60 * 24))
 }
