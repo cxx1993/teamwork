@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import _ from 'lodash'
 import {
   dealTaskList, insertTask, removeTask, updateTask as _updateTask,
 } from './utils/store_fn'
@@ -9,33 +10,45 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     date: [],
-    user: [],
-    task: [1, 2, 3],
+    collection: [], // 处理后的数据集合
   },
   getters: {
     getDate: state => {
       return state.date
     },
+    // 获取userlist
     getUser: state => {
-      return state.user
+      const { collection } = state
+      // console.log(collection)
+      if (collection.length) {
+        return collection.map(v => {
+          const { username, id, minHeight } = v
+          return {
+            username, id, minHeight,
+          }
+        })
+      }
+      return []
     },
-    getTask: state => {
-      return state.task
+    // 获取task
+    getCollection: state => {
+      return state.collection
     },
   },
   mutations: {
     updateDate(state, newDate) {
       state.date = newDate
     },
-    updateUser(state, newUser) {
-      state.user = newUser
-    },
     // 更新指定的user
-    updateUserByIndex(state, { idx, user }) {
-      state.user[idx] = user
+    updateUserByIndex(state, { idx, userId, update }) {
+      const { collection } = state
+      const _idx = _.findIndex(collection, (o) => { return o.id === userId })
+      if (_idx !== -1) {
+        collection[idx] = Object.assign(collection[idx], update)
+      }
     },
-    updateTask(state, newTask) {
-      state.task = dealTaskList(newTask, state.user)
+    updateCollection(state, { task, user }) {
+      state.collection = dealTaskList(task, user)
     },
     curdTask(state, { data, type }) {
       switch (type) {

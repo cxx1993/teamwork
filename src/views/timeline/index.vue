@@ -67,35 +67,18 @@ export default {
   },
   computed: {
     ...mapGetters({
-      store_getUser: 'getUser',
-      store_getTask: 'getTask',
+      store_getCollection: 'getCollection',
     }),
   },
   methods: {
     ...mapMutations({
-      store_updateUser: 'updateUser',
-      store_updateTask: 'updateTask',
+      store_updateCollection: 'updateCollection',
     }),
     // w:滚动区域的宽度，offset:背景偏移的距离
     setWidth(w, offset) {
       this.width = this.width + w
       this.offset = offset
     },
-    // combine() {
-    // const { groups } = this
-    // const groups = this.store_getUser
-    // items.forEach(v => {
-    //   const _idx = _.findIndex(groups, (o) => { return o.id === v.userId })
-
-    //   if (_idx !== -1) {
-    //     if (!groups[_idx].list) {
-    //       groups[_idx].list = []
-    //     }
-    //     groups[_idx].list.push(v)
-    //   }
-    // })
-    // this.tbData = groups
-    // },
     // 添加任务
     handleAddTask(userId) {
       this.drawer.show = true
@@ -118,11 +101,8 @@ export default {
   created() {
     axios.get('http://127.0.0.1:3000/db').then(res => {
       const { data: { user, task } } = res
-      this.store_updateUser(user)
-      // items = task
-      // this.combine()
-      this.store_updateTask(task, user)
-      this.tbData = this.store_getTask
+      this.store_updateCollection({ task, user })
+      this.tbData = this.store_getCollection
     })
   },
 }

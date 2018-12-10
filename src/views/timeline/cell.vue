@@ -187,12 +187,14 @@ export default {
   created() {
     if (this.list.length) {
       this.completeCalculation()
-      // 更新user的min-height
+      // 更新user 的min-height
       const { store_getUser, userId,minHeight } = this  // eslint-disable-line
-      const idx = _.findIndex(store_getUser, (o) => { return o.id === userId })
+      const _storeGetUser = Object.assign([], store_getUser)
+      const idx = _.findIndex(_storeGetUser, (o) => { return o.id === userId })
       if (idx !== -1) {
-        store_getUser[idx].minHeight = minHeight
-        this.updateUserByIndex({ idx, user: store_getUser[idx] })
+        // console.log(store_getUser)
+        this.updateUserByIndex({ idx, userId, update: { minHeight } })
+        // console.log(this.$store.getters.getUser)
       }
     }
   },
