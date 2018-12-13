@@ -1,8 +1,12 @@
 <template>
   <div id='timeline-slider'>
-      <!-- <template > -->
+    <!-- {{list[0]}}
+    ==
+    {{$store.getters.getUser[0]}} -->
+      <div class='content'>
+        <!-- <template > -->
         <div class='avatar-container'
-          v-for='(item, key) in store_getUser'
+          v-for='(item, key) in $store.getters.getUser'
           :key='key'
           :style="{minHeight:item.minHeight+'px'}"
           @click='editGroup(item.id)'
@@ -12,7 +16,12 @@
           </Tooltip>
           <div class='username'>{{item.username}}</div>
         </div>
-      <!-- </template> -->
+        <!-- </template> -->
+        <div class='addBtn'>
+          <Button type="default" @click='addGroup'><Icon type="md-add" /></Button>
+        </div>
+      </div>
+
       <Drawer
         :title='drawer.title'
         :closable="false"
@@ -37,7 +46,8 @@ export default {
         show: false,
         title: '',
       },
-      list: [{ username: '陈昕', id: '22123', minHeight: '1' }, { username: '林和博豪', id: '42343', minHeight: '2' }, { username: '测试用户1', id: '4421', minHeight: '3' }, { username: '超级管理员', id: '9092', minHeight: '4' }],
+      list: [],
+      // list: [{ username: '陈昕', id: '22123', minHeight: '1' }, { username: '林和博豪', id: '42343', minHeight: '2' }, { username: '测试用户1', id: '4421', minHeight: '3' }, { username: '超级管理员', id: '9092', minHeight: '4' }],
     }
   },
   filters: {
@@ -54,6 +64,7 @@ export default {
   computed: {
     ...mapGetters({
       store_getUser: 'getUser',
+      store_getCollection: 'getCollection',
     }),
     // dataList() {
     //   return this.$store.getters.getUser
@@ -61,9 +72,16 @@ export default {
   },
   watch: {
     store_getUser(after, before) {
+      // console.log('===watch user===')
+      // this.list = after
       // console.log('===')
       // console.log(after, before)
       // console.log('===')
+    },
+    store_getCollection(after, before) {
+      // console.log('===watch collection===')
+      // console.log(after)
+      // console.log(this.$store.getters.getUser)
     },
   },
   methods: {
@@ -80,12 +98,14 @@ export default {
       this.$refs.user.updateInit({ type: 1, userId }) // 调用user编辑
     },
     handleDrawerClose() {
-
+      this.$refs.user.handleReset()
     },
   },
   updated() {
+
   },
   created() {
+    this.list = this.store_getUser
   },
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
   <Form ref="formCustom" :model="formCustom" :rules="ruleCustom" :label-width="80">
-      <FormItem label="用户ID" prop="id">
+      <FormItem label="用户ID" prop="id" v-show="type">
           <Input type="text" v-model="formCustom.id"></Input>
       </FormItem>
       <FormItem label="用户名" prop="username">
@@ -10,8 +10,8 @@
           <Input type="textarea" v-model="formCustom.mark"></Input>
       </FormItem>
       <FormItem>
-          <Button type="primary" @click="handleSubmit('formCustom')">Submit</Button>
-          <Button @click="handleReset('formCustom')" style="margin-left: 8px">Reset</Button>
+          <Button type="primary" @click="handleSubmit">Submit</Button>
+          <Button @click="handleReset" style="margin-left: 8px">Reset</Button>
       </FormItem>
   </Form>
 </template>
@@ -51,23 +51,31 @@ export default {
         this.formCustom = res.data
       })
     },
-    handleSubmit(name) {
-      this.$refs[name].validate((valid) => {
+    handleSubmit() {
+      this.$refs.formCustom.validate((valid) => {
         if (valid) {
-          this.type ? this.handleAdd() : this.handleUpdate() // eslint-disable-line
+          this.type ? this.handleUpdate() : this.handleAdd() // eslint-disable-line
         }
       })
     },
-    handleReset(name) {
-      this.$refs[name].resetFields()
+    handleReset() {
+      this.$refs.formCustom.resetFields()
     },
     handleAdd() {
-
+      const { formCustom } = this
+      delete formCustom.id
+      axios.post('http://127.0.0.1:3000/user', formCustom).then(res => {
+        this.$Message.success('新增成功')
+        this.$emit('close', false)
+        // todo:修改store
+      })
     },
     handleUpdate() {
       const { userId, formCustom } = this
       axios.put(`http://127.0.0.1:3000/user/${userId}`, formCustom).then(res => {
-        console.log('/////')
+        this.$Message.success('修改成功')
+        this.$emit('close', false)
+        // todo:修改store
       })
     },
   },

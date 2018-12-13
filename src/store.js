@@ -19,7 +19,11 @@ export default new Vuex.Store({
     // 获取userlist
     getUser: state => {
       const { collection } = state
+
+      // console.log('===start user===')
       // console.log(collection)
+      // console.log('===end user===')
+
       if (collection.length) {
         return collection.map(v => {
           const { username, id, minHeight } = v
@@ -32,6 +36,9 @@ export default new Vuex.Store({
     },
     // 获取task
     getCollection: state => {
+      // console.log('===start user===')
+      // console.log(state.collection)
+      // console.log('===end user===')
       return state.collection
     },
   },
@@ -44,9 +51,10 @@ export default new Vuex.Store({
       const { collection } = state
       const _idx = _.findIndex(collection, (o) => { return o.id === userId })
       if (_idx !== -1) {
-        collection[idx] = Object.assign(collection[idx], update)
+        state.collection[idx] = Object.assign(collection[idx], update)
       }
     },
+    // 更新collection
     updateCollection(state, { task, user }) {
       state.collection = dealTaskList(task, user)
     },

@@ -1,10 +1,10 @@
 <template>
   <div id='timeline'>
     <Slider></Slider>
-    <div id='timeline-content'>
+    <div ref='timeline-content' id='timeline-content'>
       <!-- <div :style="{overflow:'scroll',width:'5000px'}"> -->
-      <div :style="{width:width+'px'}" style='width:100%;height:100%;position:relative;'>
-        <Date :caculateW='setWidth'></Date>
+      <div id='timeline-scroll' :style="{width:width+'px'}" style='width:100%;position:relative;height:100vh;'>
+        <Date ref='date' :caculateW='setWidth'></Date>
         <div id="timeline-cell">
           <Cell
             v-for='(item,idx) in tbData'
@@ -16,6 +16,8 @@
           >
           </Cell>
         </div>
+        <div @click="handlePage('prev')" class='left page'><Icon type="ios-arrow-dropleft-circle" /></div>
+        <div @click="handlePage('next')" class='right page'><Icon type="ios-arrow-dropright-circle" /></div>
         <div class='bgGround' :style="{left:offset+'px',width:width-offset+'px',backgroundImage: 'url('+bgBase64+')',backgroundSize: '378px 20px'}">
         </div>
       </div>
@@ -35,6 +37,7 @@
 <script>
 import { mapMutations, mapGetters } from 'vuex'
 import axios from 'axios'
+import { caculateDateRange } from '@/utils/format'
 import Slider from './slider.vue'
 import Cell from './cell.vue'
 import Date from './date.vue'
@@ -78,6 +81,10 @@ export default {
     setWidth(w, offset) {
       this.width = this.width + w
       this.offset = offset
+      // 定位至中部
+      // this.$nextTick(() => {
+      //   this.$refs['timeline-content'].scrollLeft = this.width * 0.5
+      // })
     },
     // 添加任务
     handleAddTask(userId) {
@@ -94,16 +101,34 @@ export default {
       // 关闭抽屉重置表格
       this.$refs.task.handleReset()
     },
+    // handleScroll(e) {
+    // },
+    // 翻页
+    handlePage(type) {
+      const { dataRange } = this
+      const _dateRange = caculateDateRange({ type, sdate: dataRange[0], edate: dataRange[1] })
+      this.$refs.date.updateDateRange(_dateRange, type) // 调date方法，更新时间
+      this.handleFetchData() // 重新获取数据
+    },
+    // 获取数据
+    handleFetchData() {
+      axios.get('http://127.0.0.1:3000/db').then(res => {
+        const { data: { user, task } } = res
+        this.store_updateCollection({ task, user })
+        this.tbData = this.store_getCollection
+      // this.$refs..redraw() // 重绘
+      })
+    },
   },
   mounted() {
-    this.$el.querySelector('#timeline-content').addEventListener('scroll', this.handleScroll)
+    // this.$el.querySelector('#timeline-content').addEventListener('scroll', this.handleScroll)
+    const dataRange = caculateDateRange({}) // 获取初始时间
+    this.dataRange = dataRange
+    this.$refs.date.initDateRange(dataRange) // 调date方法，初始化时间
+    this.handleFetchData()
   },
   created() {
-    axios.get('http://127.0.0.1:3000/db').then(res => {
-      const { data: { user, task } } = res
-      this.store_updateCollection({ task, user })
-      this.tbData = this.store_getCollection
-    })
+
   },
 }
 </script>

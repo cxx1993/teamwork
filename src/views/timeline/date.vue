@@ -31,14 +31,15 @@ export default {
       dataRange: [], // 时间区间
       liWidth: 0,
       firstWeekendPosition: -1, // 第一个周末的位置
+      // len: 0, // 记录一共有多少条数据
     }
   },
   props: ['caculateW'],
   methods: {
-    ...mapMutations([
-      'updateDate',
-    ]),
-    dateRange(sdate, edate) {
+    ...mapMutations({
+      store_updateDate: 'updateDate',
+    }),
+    dealDate(sdate, edate) {
       const { liWidth } = this
       const start = setDate(sdate, 1)
       const end = lastDayOfMonth(edate)
@@ -46,9 +47,7 @@ export default {
         start,
         end,
       )
-      this.dataRange = this.mutiDate(result)
-      this.updateDate(result)
-      this.caculateW(result.length * liWidth, (this.firstWeekendPosition - 5) * liWidth)
+      return result
     },
     // 丰富数据
     mutiDate(result) {
@@ -86,6 +85,39 @@ export default {
       this.firstWeekendPosition = _firstWeekendPosition
       return rv
     },
+    // 初始化
+    initDateRange(date) {
+      const { liWidth } = this
+      const result = this.dealDate(date[0], date[1])
+      this.dataRange = this.mutiDate(result)
+      this.store_updateDate(result) // 更新store数据
+      this.caculateW(result.length * liWidth, (this.firstWeekendPosition - 5) * liWidth)
+    },
+    // 更新 -- 追加时间段
+    updateDateRange(date, type) {
+      const { liWidth } = this
+      const result = this.dealDate(date[0], date[1])
+      let _dataRange = this.mutiDate(result)
+      try {
+        switch (type) {
+          case 'prev':
+            // 向前追加
+            _dataRange = _dataRange.concat(this.dataRange)
+            break
+          case 'next':
+            // 向后追加
+            _dataRange = this.dataRange.concat(_dataRange)
+            break
+          default:
+            throw new Error('type不存在')
+        }
+        this.dataRange = _dataRange // 更新dateRange
+        this.store_updateDate(_dataRange) // 更新store数据
+        this.caculateW(result.length * liWidth, (this.firstWeekendPosition - 5) * liWidth) // 更新宽度
+      } catch (error) {
+        console.log(error.message)
+      }
+    },
   },
   computed: {
     ...mapGetters({
@@ -95,7 +127,6 @@ export default {
   filters: {},
   created() {
     this.liWidth = this.$global.liWidth
-    this.dateRange(new Date('2018-09-09'), new Date())
   },
 }
 </script>

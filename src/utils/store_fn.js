@@ -7,6 +7,9 @@ import _ from 'lodash'
  * @param {Object} groups 左侧的slider--分组依据
  */
 export const dealTaskList = function (taskList, userList) {
+  if (!taskList || !userList) {
+    return []
+  }
   taskList.forEach(v => {
     const _idx = _.findIndex(userList, (o) => { return o.id === v.userId })
 
