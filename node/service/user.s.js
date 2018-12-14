@@ -58,9 +58,16 @@ module.exports = {
    * params：查询条件
    * field：筛选需要返回的字段（不传返回所有）
    */
-  findMutiByParams(params, field = '') {
+  findMutiByParams(params, field = '', query = {}, page) {
+    let { pagesize, sort, limit } = page
+    limit = limit || search.limit
+    const skip = limit * pagesize
+    // if (isNaN(pagesize)) {
+    //   skip = 0
+    // }
+
     return new Promise((resolve, reject) => {
-      User.find(params, field)
+      User.find(params, field).skip()
         .then(res => {
           const data = {
             list: res,

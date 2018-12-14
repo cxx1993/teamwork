@@ -44,11 +44,46 @@ module.exports = {
     const res = await Service.updateUserById(id, params)
     ctx.body = res
   },
-  // 查找列表
+  /**
+   * 查找列表
+   * 支持 username模糊查询，create_time时间段查询，create_time（升序1/降序0），role，gender
+   * pagesize分页页数，limit分页条数
+   * field：显示需要返回的字段(不填返回所有) eg：{password : 0,role: 1}
+   */
   async findList(ctx, next) {
+    const { query } = ctx.request
     const params = {}
-    const res = await Service.findMutiByParams(params)
-    ctx.body = res
+    try {
+      const {
+        pagesize, username, sort, limit, sTime, eTime, role, gender, field,
+      } = query
+      const _or = [] // push需要查询的对象
+      let _and = [] // 范围查询
+      // ====query start====
+      if (username) { // 模糊查询username
+        _or.push({ username: { $regex: username, $options: '$i' } })
+      }
+      if (role) {
+        _or.push({ role })
+      }
+      if (gender) {
+        _or.push({ gender })
+      }
+      if (sTime && eTime) {
+        _and = [{ create_time: { $gt: sTime } }, { create_time: { $lt: eTime } }]
+      }
+      // ====分页 start====
+      if (_or.length) query.$or = _or
+      if (_and.length) query.$and = _and
+
+      const res = await Service.findMutiByParams(params, field, query, { pagesize, sort, limit })
+      ctx.body = res
+    } catch (err) {
+      ctx.body = {
+        code: 0,
+        msg: err.message,
+      }
+    }
   },
 
 
